@@ -15,4 +15,13 @@ public class IncidentAttachment
 
     public Incident Incident { get; private set; } = default!;
     public ApplicationUser Uploader { get; private set; } = default!;
+
+
+    public IncidentAttachment(Guid incidentId, string fileName, string filePath, Guid uploaderId)
+    {
+        IncidentId = incidentId;
+        FileName = fileName;
+        FilePath = filePath;
+        UploaderId = uploaderId;
+    }
 }

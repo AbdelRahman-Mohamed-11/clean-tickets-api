@@ -1,4 +1,3 @@
-using TicketingSystem.Api.Endpoints;
 using TicketingSystem.API.Middlewares;
 using TicketingSystem.Application;
 using TicketingSystem.Infrastructure;
@@ -16,6 +15,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -36,9 +36,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapAuthEndpoints();
-
-app.MapIncidentEndpoints();
+app.MapControllers();
 
 await SeedUsersWithRoles.InitializeAsync(app.Services);
 

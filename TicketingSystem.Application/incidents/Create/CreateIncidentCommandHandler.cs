@@ -1,25 +1,31 @@
 ﻿using Ardalis.Result;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 using TicketingSystem.Core.Entities;
 using TicketingSystem.Core.Interfaces;
 
 namespace TicketingSystem.Application.incidents.Create;
 
-public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHttpContextAccessor httpContextAccessor)
+public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHttpContextAccessor httpContextAccessor, 
+    ILogger<CreateIncidentCommandHandler> logger)
         : IRequestHandler<CreateIncidentCommand, Result<Guid>>
 {
-    public async Task<Result<Guid>> Handle(CreateIncidentCommand req, CancellationToken ct)
+    public async Task<Result<Guid>> Handle(CreateIncidentCommand request, CancellationToken ct)
     {
-        if (req.IsRecurring && req.RecurringCallId.HasValue)
+        logger.LogInformation("Starting incident creation. IsRecurring={IsRecurring}, Subject={Subject}",
+                request.IsRecurring, request.Subject);
+
+        if (request.IsRecurring && request.RecurringCallId.HasValue)
         {
             var existingRecurringIncident = await ticketDbContext.Incidents
-                .FindAsync(req.RecurringCallId.Value, ct);
+                .FindAsync(request.RecurringCallId.Value, ct);
 
             if (existingRecurringIncident is null)
             {
-                return Result.NotFound($"Recurring incident with ID {req.RecurringCallId} not found.");
+                logger.LogWarning("Recurring incident not found: {RecurringCallId}", request.RecurringCallId);
+
+                return Result.NotFound($"Recurring incident with ID {request.RecurringCallId} not found.");
             }
         }
 
@@ -28,27 +34,32 @@ public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHtt
             .User.FindFirst("ID")?
             .Value;
 
-        if (userId is null)
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var _))
         {
-            return Result.Unauthorized("Invalid or missing user ID in token.");
+            logger.LogWarning("Unauthorized: missing or invalid user ID in token");
+            return Result.Unauthorized("InvalidOrMissingUserId");
         }
 
         var incident = new Incident(
             loggedById: Guid.Parse(userId),
-            callType: req.CallType,
-            module: req.Module,
-            urlOrFormName: req.UrlOrFormName,
-            isRecurring: req.IsRecurring,
-            recurringCallId: req.RecurringCallId,
-            priority: req.Priority,
-            subject: req.Subject,
-            description: req.Description,
-            suggestion: req.Suggestion
+            callType: request.CallType,
+            module: request.Module,
+            urlOrFormName: request.UrlOrFormName,
+            isRecurring: request.IsRecurring,
+            recurringCallId: request.RecurringCallId,
+            priority: request.Priority,
+            subject: request.Subject,
+            description: request.Description,
+            suggestion: request.Suggestion
         );
 
-        await ticketDbContext.Incidents.AddAsync(incident , ct);
+        await ticketDbContext.Incidents.AddAsync(incident, ct);
 
         await ticketDbContext.SaveChangesAsync(ct);
+
+
+        logger.LogInformation("Incident created successfully with ID {IncidentId} by user {UserId}",
+            incident.Id, userId);
 
         return incident.Id;
     }

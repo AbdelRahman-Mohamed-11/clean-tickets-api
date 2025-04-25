@@ -20,4 +20,8 @@
     <ProjectReference Include="..\TicketingSystem.Infrastructure\TicketingSystem.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

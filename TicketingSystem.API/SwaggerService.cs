@@ -34,6 +34,7 @@ public static class SwaggerService
             };
 
             c.AddSecurityRequirement(securityRequirement);
+
         });
 
         return services;
