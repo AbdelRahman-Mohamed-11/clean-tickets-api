@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketingSystem.API", "TicketingSystem.API\TicketingSystem.API.csproj", "{2F1CCF19-0750-4B7D-AA45-5348E0006175}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketingSystem.Core", "TicketingSystem.Core\TicketingSystem.Core.csproj", "{4DA28F6C-D282-4F80-947D-67C78165B1C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketingSystem.Application", "TicketingSystem.Application\TicketingSystem.Application.csproj", "{1AC15015-A14F-4556-A699-DD4EB8DC42A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketingSystem.Infrastructure", "TicketingSystem.Infrastructure\TicketingSystem.Infrastructure.csproj", "{C787495D-5D20-4244-95F7-580E45ED1AAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{2F1CCF19-0750-4B7D-AA45-5348E0006175}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F1CCF19-0750-4B7D-AA45-5348E0006175}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F1CCF19-0750-4B7D-AA45-5348E0006175}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DA28F6C-D282-4F80-947D-67C78165B1C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DA28F6C-D282-4F80-947D-67C78165B1C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DA28F6C-D282-4F80-947D-67C78165B1C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DA28F6C-D282-4F80-947D-67C78165B1C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AC15015-A14F-4556-A699-DD4EB8DC42A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AC15015-A14F-4556-A699-DD4EB8DC42A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AC15015-A14F-4556-A699-DD4EB8DC42A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AC15015-A14F-4556-A699-DD4EB8DC42A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C787495D-5D20-4244-95F7-580E45ED1AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C787495D-5D20-4244-95F7-580E45ED1AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C787495D-5D20-4244-95F7-580E45ED1AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C787495D-5D20-4244-95F7-580E45ED1AAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
