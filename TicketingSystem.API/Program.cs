@@ -10,7 +10,11 @@ builder.Services.AddSwaggerDocumentation();
 builder.Services.AddInfrastructure(builder.Configuration)
     .AddApplication(builder.Configuration);
 
+builder.Services.AddProblemDetails();
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();
@@ -34,6 +38,7 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 
+app.MapIncidentEndpoints();
 
 await SeedUsersWithRoles.InitializeAsync(app.Services);
 

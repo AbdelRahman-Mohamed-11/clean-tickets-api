@@ -1,10 +1,12 @@
-﻿namespace TicketingSystem.Core.Entities.Identity.Constatns;
+﻿namespace TicketingSystem.Core.Constatns;
 
 public class ValidationConstants
 {
     public const int UserNameMinLen = 3;
     public const int PasswordMinLen = 6;
-
+    public const int UrlMaxLength = 200;
+    public const int SubjectMaxLength = 200;
+    public const int SuggestionMaxLength = 500;
 
     public const string UserNameRequired = "Username is required.";
     public const string UserNameMinLength = "Username must be at least {0} characters long.";

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using TicketingSystem.Application.Users.Register;
-using TicketingSystem.Core.Entities.Identity.Constatns;
+using TicketingSystem.Core.Constatns;
 
 namespace TicketingSystem.Application.Users.Login;
 

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using TicketingSystem.Core.Entities.Identity.Constatns;
+using TicketingSystem.Core.Constatns;
 
 namespace TicketingSystem.Application.Users.Register;
 
