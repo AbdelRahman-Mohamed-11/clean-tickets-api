@@ -6,7 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using TicketingSystem.Application.Dtos.Identity;
+using TicketingSystem.Core.Dtos.Identity;
 using TicketingSystem.Core.Entities.Identity;
 using TicketingSystem.Infrastructure.Interfaces;
 
@@ -113,7 +113,7 @@ namespace TicketingSystem.Infrastructure.Services
 
             if (username != null) user = await userManager.FindByNameAsync(username);
 
-            if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryDate <= DateTime.Now)
+            if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryDate <= DateTime.UtcNow)
             {
                 throw new Exception("Invalid client request");
             }

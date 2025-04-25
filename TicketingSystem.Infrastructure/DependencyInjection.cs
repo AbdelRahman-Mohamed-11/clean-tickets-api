@@ -7,7 +7,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using TicketingSystem.Core.Entities.Identity;
+using TicketingSystem.Infrastructure.Interfaces;
 using TicketingSystem.Infrastructure.Persistence;
+using TicketingSystem.Infrastructure.Services;
 
 namespace TicketingSystem.Infrastructure
 {
@@ -54,6 +56,8 @@ namespace TicketingSystem.Infrastructure
                 });
 
             services.AddAuthorization();
+
+            services.AddScoped<IJwtService, JwtService>();
 
             return services;
         }

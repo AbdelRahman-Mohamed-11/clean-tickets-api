@@ -1,4 +1,4 @@
-﻿namespace TicketingSystem.Application.Dtos.Identity;
+﻿namespace TicketingSystem.Core.Dtos.Identity;
 
 public class UserRefreshToken
 {

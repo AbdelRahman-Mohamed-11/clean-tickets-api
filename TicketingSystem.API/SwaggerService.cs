@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 
 namespace TicketingSystem.Infrastructure;
 
@@ -9,7 +7,6 @@ public static class SwaggerService
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerDocumentation();
 
         services.AddSwaggerGen(c =>
         {
