@@ -9,10 +9,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TicketingSystem.Application.IncidentAttachments.Add;
+using TicketingSystem.Application.IncidentAttachments.Update;
+using TicketingSystem.Application.IncidentComments;
 using TicketingSystem.Application.incidents.Create;
 using TicketingSystem.Application.incidents.GetById;
 using TicketingSystem.Application.incidents.List;
+using TicketingSystem.Application.incidents.Update;
 using TicketingSystem.Core.Attachments;
+using TicketingSystem.Core.Comments;
 using TicketingSystem.Core.Dtos.Incident;
 using TicketingSystem.Core.Dtos.IncidentAttachments;
 using TicketingSystem.Core.Entities.Identity.Enums;
@@ -26,6 +30,9 @@ namespace TicketingSystem.Api.Controllers
         IMediator mediator,
         IValidator<CreateIncidentCommand> createValidator,
         IValidator<AddIncidentAttachmentsCommand> attachValidator,
+        IValidator<UpdateIncidentCommand> updateIncidentCommandValidator,
+        IValidator<UpdateIncidentAttachmentsCommand> updateIncidentAttachmentsCommandValidator,
+        IValidator<AddIncidentCommentCommand> addIncidentCommentCommandValidator,
         ILogger<CreateIncidentCommandHandler> createLogger,
         ILogger<GetIncidentByIdQueryHandler> getLogger,
         ILogger<AddIncidentAttachmentsCommandHandler> attachLogger
@@ -185,6 +192,164 @@ namespace TicketingSystem.Api.Controllers
               ? Ok(result.Value)
               : BadRequest(result.Errors);
         }
+
+
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateIncident(Guid id, [FromBody] UpdateIncidentDto dto)
+        {
+            var command = new UpdateIncidentCommand(
+                id,
+                dto.Suggestion,
+                dto.UserStatus,
+                dto.SupportStatus,
+                dto.AssignedToId,
+                dto.DeliveryDate
+            );
+
+            var validation = await updateIncidentCommandValidator.ValidateAsync(command);
+
+            if (!validation.IsValid)
+            {
+                var errors = validation.Errors.Select(e => e.ErrorMessage);
+                return BadRequest(Result.Invalid(new List<ValidationError>(errors.Select(e => new ValidationError(e)))));
+            }
+
+            var result = await mediator.Send(command);
+
+            if (result.Status == ResultStatus.Unauthorized)
+            {
+                return Forbid();
+            }
+
+            if (result.Status == ResultStatus.NotFound)
+            {
+                return NotFound(result.Errors);
+            }
+
+            if (result.Status == ResultStatus.Invalid)
+            {
+                return BadRequest(result.ValidationErrors);
+            }
+
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+        }
+
+
+        [HttpPut("{id:guid}/attachments")]
+        [RequestSizeLimit(50_000_000)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateIncidentAttachments(
+            Guid id,
+            [FromForm] AddAttachmentsDto addAttachmentsDto)
+        {
+            attachLogger.LogInformation("Received UpdateAttachments request for Incident {Id}", id);
+
+            var command = new UpdateIncidentAttachmentsCommand(id, addAttachmentsDto.Files);
+
+            var validation = await updateIncidentAttachmentsCommandValidator.ValidateAsync(command);
+
+            if (!validation.IsValid)
+            {
+                var errors = validation.Errors.Select(e => e.ErrorMessage);
+                attachLogger.LogWarning("UpdateAttachments validation failed: {Errors}", string.Join("; ", errors));
+                return BadRequest(Result.Invalid(new List<ValidationError>(errors.Select(e => new ValidationError(e)))));
+            }
+
+            var result = await mediator.Send(command);
+
+            if (result.Status == ResultStatus.Unauthorized)
+            {
+                attachLogger.LogWarning("Unauthorized UpdateAttachments attempt for Incident {Id}", id);
+                return Forbid();
+            }
+
+            if (result.Status == ResultStatus.NotFound)
+            {
+                attachLogger.LogWarning("Incident not found for UpdateAttachments: {Id}", id);
+                return NotFound(result.Errors);
+            }
+
+            if (result.Status == ResultStatus.Invalid)
+            {
+                attachLogger.LogWarning("UpdateAttachments validation failed for Incident {Id}: {Errors}", id, result.ValidationErrors);
+                return BadRequest(result.ValidationErrors);
+            }
+
+            if (result.IsSuccess)
+            {
+                attachLogger.LogInformation("Successfully updated attachments for Incident {Id}", id);
+                return NoContent();
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+        }
+
+        [HttpPut("{id:guid}/comments")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateIncidentComments(
+          Guid id,
+          AddCommentDto dto)
+        {
+            attachLogger.LogInformation("Received UpdateComments request for Incident {Id}", id);
+
+            var command = new AddIncidentCommentCommand(id, dto.Text);
+
+            var validation = await addIncidentCommentCommandValidator.ValidateAsync(command);
+
+            if (!validation.IsValid)
+            {
+                var errors = validation.Errors.Select(e => e.ErrorMessage);
+                attachLogger.LogWarning("UpdateComments validation failed: {Errors}", string.Join("; ", errors));
+                return BadRequest(Result.Invalid(new List<ValidationError>(errors.Select(e => new ValidationError(e)))));
+            }
+
+            var result = await mediator.Send(command);
+
+            if (result.Status == ResultStatus.Unauthorized)
+            {
+                attachLogger.LogWarning("Unauthorized UpdateComments attempt for Incident {Id}", id);
+                return Forbid();
+            }
+
+            if (result.Status == ResultStatus.NotFound)
+            {
+                attachLogger.LogWarning("Incident not found for UpdateComments: {Id}", id);
+                return NotFound(result.Errors);
+            }
+
+            if (result.Status == ResultStatus.Invalid)
+            {
+                attachLogger.LogWarning("UpdateComments validation failed for Incident {Id}: {Errors}", id, result.ValidationErrors);
+                return BadRequest(result.ValidationErrors);
+            }
+
+            if (result.IsSuccess)
+            {
+                attachLogger.LogInformation("Successfully updated attachments for Incident {Id}", id);
+                return NoContent();
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+        }
+
     }
 }
 

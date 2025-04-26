@@ -34,7 +34,9 @@ public class Incident(
     public UserStatus UserStatus { get; private set; } = UserStatus.Pending;
     public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
     public DateTime? DeliveryDate { get; private set; }
-
+    public DateTime StatusUpdatedDate { get; private set; } = DateTime.UtcNow;
+    public DateTime? ClosedDate { get; private set; }
+    
     public ApplicationUser LoggedBy { get; private set; } = default!;
     public ApplicationUser? AssignedTo { get; private set; }
     public Incident? RecurringCall { get; private set; }
@@ -43,4 +45,42 @@ public class Incident(
     private readonly List<IncidentAttachment> _attachments = new();
     public IReadOnlyCollection<IncidentComment> Comments => _comments;
     public IReadOnlyCollection<IncidentAttachment> Attachments => _attachments;
+
+
+    public void SetSuggestion(string? suggestion)
+    {
+        Suggestion = suggestion;
+    }
+
+    public void SetSupportStatus(SupportStatus supportStatus)
+    {
+        SupportStatus = supportStatus;
+    }
+
+    public void SetUserStatus(UserStatus userStatus)
+    {
+        UserStatus = userStatus;
+    }
+
+    public void SetAssignedTo(Guid? assignedToId)
+    {
+        AssignedToId = assignedToId;
+    }
+
+
+    public void SetDeliveryDate(DateTime deliveryDate)
+    {
+        DeliveryDate = deliveryDate;
+    }
+
+    public void SetClosedDate(DateTime closedDate)
+    {
+        ClosedDate = closedDate;
+    }
+
+    public void SetStatusUpdatedDate(DateTime statusUpdatedDate)
+    {
+        StatusUpdatedDate = statusUpdatedDate;
+    }
+
 }
