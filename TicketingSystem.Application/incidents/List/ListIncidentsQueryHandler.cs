@@ -28,7 +28,7 @@ public class ListIncidentsQueryHandler(
         
         var isErp = user.IsInRole(nameof(Role.ERP));
         
-        var query = db.Incidents.AsNoTracking();
+        var query = db.Incidents.AsNoTracking().Where(i => !i.IsDeleted);
 
         if (!isAdmin && !isErp)
         {

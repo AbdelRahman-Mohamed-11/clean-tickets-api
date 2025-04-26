@@ -7,7 +7,7 @@ using System.Security.Claims;
 using TicketingSystem.Core.Entities;
 using TicketingSystem.Core.Interfaces;
 
-namespace TicketingSystem.Application.IncidentComments
+namespace TicketingSystem.Application.IncidentComments.Add
 {
     public class AddIncidentCommentCommandHandler(
             ITicketDbContext db,
@@ -48,10 +48,10 @@ namespace TicketingSystem.Application.IncidentComments
 
             var comment = new IncidentComment(req.IncidentId, req.Text, userId);
             await db.IncidentComments.AddAsync(comment, ct);
-            
+
             await db.SaveChangesAsync(ct);
 
-           
+
 
             logger.LogInformation("Comment {CommentId} created on Incident {Id}", comment.Id, req.IncidentId);
             return Result.NoContent();

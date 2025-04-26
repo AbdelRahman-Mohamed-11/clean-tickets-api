@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace TicketingSystem.Application.IncidentComments
+namespace TicketingSystem.Application.IncidentComments.Add
 {
     public class AddIncidentCommentCommandValidator
         : AbstractValidator<AddIncidentCommentCommand>

@@ -22,6 +22,8 @@ namespace TicketingSystem.Infrastructure.Persistence
 
             builder.Ignore<IdentityUserLogin<Guid>>();
             builder.Ignore<IdentityUserToken<Guid>>();
+
+
         }
     }
 }

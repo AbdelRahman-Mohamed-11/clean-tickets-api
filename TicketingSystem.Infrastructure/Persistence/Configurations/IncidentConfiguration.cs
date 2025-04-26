@@ -78,5 +78,8 @@ public class IncidentConfiguration : IEntityTypeConfiguration<Incident>
             .WithOne(a => a.Incident)
             .HasForeignKey(a => a.IncidentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+           .HasQueryFilter(i => !i.IsDeleted);
     }
 }

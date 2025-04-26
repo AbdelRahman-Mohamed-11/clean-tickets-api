@@ -12,7 +12,8 @@ using TicketingSystem.API.Controllers.RequestsDtos;
 using TicketingSystem.API.Extensions;
 using TicketingSystem.Application.IncidentAttachments.Add;
 using TicketingSystem.Application.IncidentAttachments.Update;
-using TicketingSystem.Application.IncidentComments;
+using TicketingSystem.Application.IncidentComments.Add;
+using TicketingSystem.Application.IncidentComments.List;
 using TicketingSystem.Application.incidents.Create;
 using TicketingSystem.Application.incidents.GetById;
 using TicketingSystem.Application.incidents.List;
@@ -280,7 +281,21 @@ public class IncidentsController(
         };
     }
 
+    [HttpGet("{id:guid}/comments")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> UpdateIncidentComments(Guid id)
+    {
+        using var scope = logger.BeginScope("GetIncidentComments: {CorrelationId}", Guid.NewGuid());
+        logger.LogInformation("Processing comment Get for incident {IncidentId}", id);
 
+        var query = new ListCommentsQuery(id);
+
+        var result = await mediator.Send(query);
+
+        return Ok(result.Value);
+    }
 }
 
 
