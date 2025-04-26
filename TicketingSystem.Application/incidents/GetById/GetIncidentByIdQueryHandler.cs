@@ -30,7 +30,7 @@ public class GetIncidentByIdQueryHandler(
             .AsNoTracking()
             .Include(i => i.Comments)
             .Include(i => i.Attachments)
-            .FirstOrDefaultAsync(i => i.Id == request.Id, ct);
+            .FirstOrDefaultAsync(i => i.Id == request.Id && !i.IsDeleted, ct);
 
         if (incident is null)
         {
