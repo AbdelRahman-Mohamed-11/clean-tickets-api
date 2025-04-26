@@ -1,16 +1,22 @@
 ﻿using Ardalis.Result;
 using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TicketingSystem.Core.Attachments;
 using TicketingSystem.Core.Comments;
 using TicketingSystem.Core.Dtos.Incident;
+using TicketingSystem.Core.Entities;
+using TicketingSystem.Core.Entities.Identity;
 using TicketingSystem.Core.Interfaces;
 
 namespace TicketingSystem.Application.incidents.GetById;
 
 public class GetIncidentByIdQueryHandler(
         ITicketDbContext db,
+        IHttpContextAccessor httpContextAccessor,
+        UserManager<ApplicationUser> userManager,
         ILogger<GetIncidentByIdQueryHandler> logger
     ) : IRequestHandler<GetIncidentByIdQuery, Result<IncidentDetailsDto>>
 {
@@ -30,6 +36,12 @@ public class GetIncidentByIdQueryHandler(
         {
             logger.LogWarning("Incident not found: {IncidentId}", request.Id);
             return Result.NotFound("incidentNotFound");
+        }
+
+        var userValidation = await ValidateUserAuthorization(incident, ct);
+        if (!userValidation.IsSuccess)
+        {
+            return userValidation;
         }
 
         var dto = new IncidentDetailsDto(
@@ -59,5 +71,38 @@ public class GetIncidentByIdQueryHandler(
 
         logger.LogInformation("Incident {IncidentId} fetched successfully", request.Id);
         return Result.Success(dto);
+    }
+
+    private async Task<Result<IncidentDetailsDto>> ValidateUserAuthorization(Incident incident, CancellationToken ct)
+    {
+        var user = httpContextAccessor.HttpContext?.User;
+        var userIdClaim = user?.FindFirst("ID")?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            logger.LogWarning("Invalid or missing user ID in token");
+            return Result.Unauthorized("Invalid or missing user ID");
+        }
+
+        if (incident.LoggedById == userId)
+        {
+            return Result.Success();
+        }
+
+        var appUser = await userManager.FindByIdAsync(userId.ToString());
+        if (appUser == null)
+        {
+            logger.LogWarning("User {UserId} not found", userId);
+            return Result.Unauthorized("User not found");
+        }
+
+        var roles = await userManager.GetRolesAsync(appUser);
+        if (roles.Contains("Admin") || roles.Contains("ERP"))
+        {
+            return Result.Success();
+        }
+
+        logger.LogWarning("User {UserId} not authorized to access incident {IncidentId}", userId, incident.Id);
+        return Result.Unauthorized("User not authorized to access this incident");
     }
 }
