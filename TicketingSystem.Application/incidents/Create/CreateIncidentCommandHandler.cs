@@ -61,6 +61,6 @@ public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHtt
         logger.LogInformation("Incident created successfully with ID {IncidentId} by user {UserId}",
             incident.Id, userId);
 
-        return incident.Id;
+        return Result.Created(incident.Id);
     }
 }

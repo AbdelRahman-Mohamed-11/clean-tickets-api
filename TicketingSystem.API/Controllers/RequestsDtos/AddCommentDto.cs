@@ -1,4 +1,4 @@
-﻿namespace TicketingSystem.Core.Comments;
+﻿namespace TicketingSystem.API.Controllers.RequestsDtos;
 
 public class AddCommentDto
 {

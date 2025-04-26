@@ -1,6 +1,6 @@
 ﻿using TicketingSystem.Core.Entities.Identity.Enums;
 
-namespace TicketingSystem.Core.Dtos.Incident;
+namespace TicketingSystem.API.Controllers.RequestsDtos;
 
 public class CreateIncidentDto
 {
@@ -14,4 +14,3 @@ public class CreateIncidentDto
     public string Description { get; set; } = default!;
     public string? Suggestion { get; set; }
 }
-
