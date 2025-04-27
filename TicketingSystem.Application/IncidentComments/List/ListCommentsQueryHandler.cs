@@ -24,7 +24,7 @@ namespace TicketingSystem.Application.IncidentComments.List
                 .Select(c => new GetCommentDto(
                     c.Id,
                     c.Text,
-                    c.CreatorId,
+                    c.Creator.UserName!,
                     c.CreatedAt))
                 .ToListAsync(cancellationToken);
 

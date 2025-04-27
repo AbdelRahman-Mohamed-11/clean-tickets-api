@@ -8,7 +8,7 @@ using TicketingSystem.Core.Entities.Identity;
 
 namespace TicketingSystem.Application.Users.GetCurrentUser
 {
-    public class GetCurrentUserQueryHandler(UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor) : IRequestHandler<GetCurrentUserQuery, Result<GetUserDto>>
+    public class GetCurrentUserQueryHandler(UserManager<ApplicationUser> userManager , RoleManager<ApplicationRole> roleManager, IHttpContextAccessor httpContextAccessor) : IRequestHandler<GetCurrentUserQuery, Result<GetUserDto>>
     {
         public async Task<Result<GetUserDto>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
         {
@@ -21,7 +21,9 @@ namespace TicketingSystem.Application.Users.GetCurrentUser
                 return Result<GetUserDto>.NotFound($"User with ID {id} not found.");
             }
 
-            return Result<GetUserDto>.Success(new GetUserDto(user.Id, user.UserName ?? "", user.Email ?? ""));
+            var roles = await userManager.GetRolesAsync(user);
+
+            return Result<GetUserDto>.Success(new GetUserDto(user.Id, user.UserName ?? "", user.Email ?? "") { Roles = roles});
         }
     }
 }

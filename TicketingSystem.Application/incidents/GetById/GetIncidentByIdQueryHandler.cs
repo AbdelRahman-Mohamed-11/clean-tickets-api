@@ -29,6 +29,7 @@ public class GetIncidentByIdQueryHandler(
         var incident = await db.Incidents
             .AsNoTracking()
             .Include(i => i.Comments)
+                .ThenInclude(i => i.Creator)
             .Include(incident => incident.LoggedBy)
             .Include(incident => incident.AssignedTo)
             .Include(i => i.Attachments)
@@ -70,7 +71,7 @@ public class GetIncidentByIdQueryHandler(
             CreatedDate: incident.CreatedDate,
             DeliveryDate: incident.DeliveryDate,
             Comments: incident.Comments
-                .Select(c => new GetCommentDto(c.Id, c.Text, c.CreatorId, c.CreatedAt))
+                .Select(c => new GetCommentDto(c.Id, c.Text, c.Creator.UserName!, c.CreatedAt))
                 .ToList(),
             Attachments: incident.Attachments
                 .Select(a => new GetAttachmentDto(a.Id, a.FileName, $"{baseUrl}/{a.FilePath}", a.UploadedAt))

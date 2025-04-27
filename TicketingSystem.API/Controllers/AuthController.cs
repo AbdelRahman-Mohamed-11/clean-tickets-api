@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using TicketingSystem.Application.Users.GetCurrentUser;
 using TicketingSystem.Application.Users.GetUserById;
 using TicketingSystem.Application.Users.List;
+using TicketingSystem.Application.Users.ListERPUsers;
 using TicketingSystem.Application.Users.Login;
 using TicketingSystem.Application.Users.Register;
 using TicketingSystem.Core.Dtos.Identity;
@@ -101,13 +102,28 @@ namespace TicketingSystem.Api.Controllers
         [HttpGet("users")]
         [ProducesResponseType(typeof(GetUserDto), StatusCodes.Status200OK)]
 
-        public async Task<IActionResult> GetAllUsers([FromQuery] UserRole user)
+        public async Task<IActionResult> GetAllUsers()
         {
             logger.LogInformation("Get All users");
 
             var users = await mediator.Send(new ListUsersQuery());
 
             logger.LogInformation("Get All users successfully");
+
+            return Ok(users.Value);
+        }
+
+        [Authorize]
+        [HttpGet("erp-users")]
+        [ProducesResponseType(typeof(GetUserDto), StatusCodes.Status200OK)]
+
+        public async Task<IActionResult> GetERPUsers()
+        {
+            logger.LogInformation("Get ERP users");
+
+            var users = await mediator.Send(new ListERPUsersQuery());
+
+            logger.LogInformation("Get ERP users successfully");
 
             return Ok(users.Value);
         }
@@ -126,7 +142,7 @@ namespace TicketingSystem.Api.Controllers
 
         [Authorize]
 
-        [HttpGet("get-current-user")]
+        [HttpGet("users/current")]
         [ProducesResponseType(typeof(GetUserDto), StatusCodes.Status200OK)]
 
         public async Task<IActionResult> GetCurrentUser()

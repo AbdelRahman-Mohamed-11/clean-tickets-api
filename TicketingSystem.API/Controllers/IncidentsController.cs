@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using TicketingSystem.API.Controllers.RequestsDtos;
 using TicketingSystem.API.Extensions;
 using TicketingSystem.Application.IncidentAttachments.Add;
+using TicketingSystem.Application.IncidentAttachments.Remove;
 using TicketingSystem.Application.IncidentAttachments.Update;
 using TicketingSystem.Application.IncidentComments.Add;
 using TicketingSystem.Application.IncidentComments.List;
@@ -22,6 +23,7 @@ using TicketingSystem.Application.incidents.Update;
 using TicketingSystem.Core.Attachments;
 using TicketingSystem.Core.Constatns;
 using TicketingSystem.Core.Dtos.Incident;
+using TicketingSystem.Core.Dtos.IncidentAttachments;
 using TicketingSystem.Core.Entities.Identity.Enums;
 
 namespace TicketingSystem.Api.Controllers;
@@ -35,7 +37,8 @@ public class IncidentsController(
     IValidator<AddIncidentAttachmentsCommand> attachValidator,
     IValidator<UpdateIncidentCommand> updateIncidentCommandValidator,
     IValidator<UpdateIncidentAttachmentsCommand> updateIncidentAttachmentsCommandValidator,
-    IValidator<AddIncidentCommentCommand> addIncidentCommentCommandValidator,
+    IValidator<AddIncidentCommentsCommand> addIncidentCommentCommandValidator,
+    IValidator<RemoveIncidentAttachmentsCommand> removeIncidentAttachmentsCommandValidator,
     ILogger<IncidentsController> logger
 ) : ControllerBase
 {
@@ -261,6 +264,39 @@ public class IncidentsController(
         };
     }
 
+    [HttpPost("{id:guid}/remove-attachments")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveIncidentAttachments(Guid id, [FromBody] RemoveAttachmentsDto dto)
+    {
+        using var scope = logger.BeginScope("RemoveIncidentAttachments: {CorrelationId}", Guid.NewGuid());
+        logger.LogInformation("Processing attachment removal for incident {IncidentId}", id);
+
+        var command = new RemoveIncidentAttachmentsCommand(id, dto.AttachmentIds);
+
+        var validationResult = await removeIncidentAttachmentsCommandValidator.ValidateAsync(command);
+
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+            logger.LogWarning("Validation failed: {Errors}", string.Join("; ", errors));
+            return BadRequest(Result.Invalid(errors.Select(e => new ValidationError(e)).ToList()));
+        }
+
+        var result = await mediator.Send(command);
+
+        return result.Status switch
+        {
+            ResultStatus.Unauthorized => Forbid(),
+            ResultStatus.NotFound => NotFound(result.Errors),
+            ResultStatus.Invalid => BadRequest(result.ValidationErrors),
+            ResultStatus.Ok => NoContent(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred")
+        };
+    }
 
     [HttpPut("{id:guid}/comments")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -268,12 +304,12 @@ public class IncidentsController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateIncidentComments(Guid id, [FromBody] AddCommentDto dto)
+    public async Task<IActionResult> UpdateIncidentComments(Guid id, [FromBody] AddCommentsDto dto)
     {
         using var scope = logger.BeginScope("UpdateIncidentComments: {CorrelationId}", Guid.NewGuid());
         logger.LogInformation("Processing comment update for incident {IncidentId}", id);
 
-        var command = new AddIncidentCommentCommand(id, dto.Text);
+        var command = new AddIncidentCommentsCommand(id, dto.Comments);
         var validationResult = await addIncidentCommentCommandValidator.ValidateAsync(command);
 
         if (!validationResult.IsValid)
@@ -299,7 +335,7 @@ public class IncidentsController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UpdateIncidentComments(Guid id)
+    public async Task<IActionResult> GetIncidentComments(Guid id)
     {
         using var scope = logger.BeginScope("GetIncidentComments: {CorrelationId}", Guid.NewGuid());
         logger.LogInformation("Processing comment Get for incident {IncidentId}", id);

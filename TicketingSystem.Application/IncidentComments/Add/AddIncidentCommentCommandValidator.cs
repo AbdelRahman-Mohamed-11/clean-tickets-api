@@ -3,13 +3,16 @@
 namespace TicketingSystem.Application.IncidentComments.Add
 {
     public class AddIncidentCommentCommandValidator
-        : AbstractValidator<AddIncidentCommentCommand>
+        : AbstractValidator<AddIncidentCommentsCommand>
     {
         public AddIncidentCommentCommandValidator()
         {
-            RuleFor(c => c.Text)
-                .NotEmpty().WithMessage("Comment text is required.")
-                .MaximumLength(500).WithMessage("Comment cannot exceed 500 characters.");
+            RuleFor(c => c.IncidentId)
+                .NotEmpty().WithMessage("Incident ID is required.")
+                .NotEqual(Guid.Empty).WithMessage("Incident ID cannot be empty.");
+
+            RuleFor(c => c.Comments)
+                .NotEmpty().WithMessage("Comment text is required.");
         }
     }
 }
