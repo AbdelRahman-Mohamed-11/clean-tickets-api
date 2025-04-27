@@ -13,6 +13,7 @@ public class Incident(
        Priority priority,
        string subject,
        string description,
+       string callRef,
        string? suggestion = null
        )
 {
@@ -30,6 +31,8 @@ public class Incident(
     public string Subject { get; private set; } = subject;
     public string Description { get; private set; } = description;
     public string? Suggestion { get; private set; } = suggestion;
+    public string CallRef { get; private set; } = callRef;
+
     public SupportStatus SupportStatus { get; private set; } = SupportStatus.Pending;
     public UserStatus UserStatus { get; private set; } = UserStatus.Pending;
     public DateTime CreatedDate { get; private set; } = DateTime.UtcNow;
@@ -46,6 +49,12 @@ public class Incident(
     public IReadOnlyCollection<IncidentComment> Comments => _comments;
     public IReadOnlyCollection<IncidentAttachment> Attachments => _attachments;
 
+    public void SetCallRef()
+    {
+        var datePart = CreatedDate.ToString("yyyyMMdd");
+        var guidPart = Guid.NewGuid().ToString().Replace("-", "").Substring(28, 4).ToUpper(); 
+        CallRef = $"INC-{datePart}-{guidPart}";
+    }
 
     public void SetSuggestion(string? suggestion)
     {
@@ -82,5 +91,7 @@ public class Incident(
     {
         StatusUpdatedDate = statusUpdatedDate;
     }
+
+    
 
 }

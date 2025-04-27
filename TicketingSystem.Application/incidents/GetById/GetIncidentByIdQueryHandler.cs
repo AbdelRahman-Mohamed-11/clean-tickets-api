@@ -29,6 +29,8 @@ public class GetIncidentByIdQueryHandler(
         var incident = await db.Incidents
             .AsNoTracking()
             .Include(i => i.Comments)
+            .Include(incident => incident.LoggedBy)
+            .Include(incident => incident.AssignedTo)
             .Include(i => i.Attachments)
             .FirstOrDefaultAsync(i => i.Id == request.Id, ct);
 
@@ -44,6 +46,10 @@ public class GetIncidentByIdQueryHandler(
             return userValidation;
         }
 
+        var httpRequest = httpContextAccessor.HttpContext?.Request;
+        
+        var baseUrl = $"{httpRequest!.Scheme}://{httpRequest.Host}";
+
         var dto = new IncidentDetailsDto(
             Id: incident.Id,
             CallType: incident.CallType,
@@ -58,14 +64,16 @@ public class GetIncidentByIdQueryHandler(
             SupportStatus: incident.SupportStatus,
             UserStatus: incident.UserStatus,
             LoggedById: incident.LoggedById,
+            LoggedByUserName: incident.LoggedBy.UserName!,
             AssignedToId: incident.AssignedToId,
+            AssignedToUserName: incident.AssignedTo?.UserName,
             CreatedDate: incident.CreatedDate,
             DeliveryDate: incident.DeliveryDate,
             Comments: incident.Comments
                 .Select(c => new GetCommentDto(c.Id, c.Text, c.CreatorId, c.CreatedAt))
                 .ToList(),
             Attachments: incident.Attachments
-                .Select(a => new GetAttachmentDto(a.Id, a.FileName, a.FilePath, a.UploadedAt))
+                .Select(a => new GetAttachmentDto(a.Id, a.FileName, $"{baseUrl}/{a.FilePath}", a.UploadedAt))
                 .ToList()
         );
 

@@ -17,6 +17,7 @@ using TicketingSystem.Application.IncidentComments.List;
 using TicketingSystem.Application.incidents.Create;
 using TicketingSystem.Application.incidents.GetById;
 using TicketingSystem.Application.incidents.List;
+using TicketingSystem.Application.incidents.Paged;
 using TicketingSystem.Application.incidents.Update;
 using TicketingSystem.Core.Attachments;
 using TicketingSystem.Core.Constatns;
@@ -66,7 +67,7 @@ public class IncidentsController(
         {
             ResultStatus.Unauthorized => Unauthorized(),
             ResultStatus.NotFound => NotFound(result.Errors),
-            ResultStatus.Ok => CreatedAtAction(
+            ResultStatus.Created => CreatedAtAction(
                 nameof(GetIncidentById),
                 new { id = result.Value },
                 new { id = result.Value }),
@@ -134,31 +135,44 @@ public class IncidentsController(
 
 
 
-    [HttpGet]
+    [HttpGet("paged")]
     [ProducesResponseType(typeof(List<IncidentSummaryDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetIncidents(
+    public async Task<IActionResult> GetPagedIncidents(
           [FromQuery] SupportStatus? supportStatus,
           [FromQuery] UserStatus? userStatus,
           [FromQuery] Module? module,
           [FromQuery] Priority? priority,
           [FromQuery] Guid? assignedToId,
           [FromQuery] DateTime? fromDate,
-          [FromQuery] DateTime? toDate)
+          [FromQuery] DateTime? toDate,
+          [FromQuery] int? pageNumber,
+          [FromQuery] int? pageSize)
     {
-        var query = new ListIncidentsQuery(
+        var query = new PagedIncidentsQuery(
           supportStatus,
           userStatus,
           module,
           priority,
           assignedToId,
           fromDate,
-          toDate);
+          toDate,
+          pageNumber ?? 1,
+          pageSize ?? 5);
 
         var result = await mediator.Send(query);
 
         return result.IsSuccess
           ? Ok(result.Value)
           : BadRequest(result.Errors);
+    }
+
+    [HttpGet("list")]
+    [ProducesResponseType(typeof(List<IncidentListDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetListIncidents()
+    {
+        var result = await mediator.Send(new ListIncidentsQuery());
+
+        return Ok(result.Value);
     }
 
 

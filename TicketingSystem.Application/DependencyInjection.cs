@@ -13,7 +13,7 @@ namespace TicketingSystem.Application
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
-            services.AddValidatorsFromAssembly(typeof(LoginUserCommandValidator).Assembly);
+            services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
             services.AddFluentValidationAutoValidation();
 

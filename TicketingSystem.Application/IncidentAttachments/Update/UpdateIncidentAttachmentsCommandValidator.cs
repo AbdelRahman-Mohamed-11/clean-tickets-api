@@ -3,10 +3,8 @@ using TicketingSystem.Application.IncidentAttachments.Add;
 
 namespace TicketingSystem.Application.IncidentAttachments.Update;
 
-
-
 public class UpdateIncidentAttachmentsCommandValidator
-    : AbstractValidator<AddIncidentAttachmentsCommand>
+    : AbstractValidator<UpdateIncidentAttachmentsCommand>
 {
     private static readonly string[] AllowedExtensions =
         { ".jpg", ".jpeg", ".png", ".pdf", ".docx", ".xlsx" };

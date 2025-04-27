@@ -7,14 +7,16 @@ using TicketingSystem.Core.Interfaces;
 
 namespace TicketingSystem.Application.incidents.Create;
 
-public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHttpContextAccessor httpContextAccessor, 
+public class CreateIncidentCommandHandler(
+    ITicketDbContext ticketDbContext,
+    IHttpContextAccessor httpContextAccessor,
     ILogger<CreateIncidentCommandHandler> logger)
-        : IRequestHandler<CreateIncidentCommand, Result<Guid>>
+    : IRequestHandler<CreateIncidentCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateIncidentCommand request, CancellationToken ct)
     {
         logger.LogInformation("Starting incident creation. IsRecurring={IsRecurring}, Subject={Subject}",
-                request.IsRecurring, request.Subject);
+            request.IsRecurring, request.Subject);
 
         if (request.IsRecurring && request.RecurringCallId.HasValue)
         {
@@ -24,7 +26,6 @@ public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHtt
             if (existingRecurringIncident is null)
             {
                 logger.LogWarning("Recurring incident not found: {RecurringCallId}", request.RecurringCallId);
-
                 return Result.NotFound($"Recurring incident with ID {request.RecurringCallId} not found.");
             }
         }
@@ -41,6 +42,7 @@ public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHtt
         }
 
         var incident = new Incident(
+            callRef: "",
             loggedById: Guid.Parse(userId),
             callType: request.CallType,
             module: request.Module,
@@ -53,14 +55,17 @@ public class CreateIncidentCommandHandler(ITicketDbContext ticketDbContext, IHtt
             suggestion: request.Suggestion
         );
 
-        await ticketDbContext.Incidents.AddAsync(incident, ct);
+        incident.SetCallRef();
 
+        await ticketDbContext.Incidents.AddAsync(incident, ct);
+        
         await ticketDbContext.SaveChangesAsync(ct);
 
-
-        logger.LogInformation("Incident created successfully with ID {IncidentId} by user {UserId}",
-            incident.Id, userId);
+        logger.LogInformation("Incident created successfully with ID {IncidentId} and CallRef {CallRef} by user {UserId}",
+            incident.Id, incident.CallRef, userId);
 
         return Result.Created(incident.Id);
     }
+
+  
 }

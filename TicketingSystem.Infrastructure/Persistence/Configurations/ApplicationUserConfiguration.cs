@@ -10,6 +10,8 @@ namespace TicketingSystem.Infrastructure.Persistence.Configurations
         {
             builder.Property(x => x.RefreshToken)
                 .HasMaxLength(500);
+
+            builder.HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Ardalis.Result;
+﻿using Ardalis.Result;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -10,25 +9,24 @@ using TicketingSystem.Core.Interfaces;
 
 namespace TicketingSystem.Application.incidents.List;
 
+
 public class ListIncidentsQueryHandler(
     ITicketDbContext db,
     IHttpContextAccessor http,
     ILogger<ListIncidentsQueryHandler> logger
-  ) : IRequestHandler<ListIncidentsQuery, Result<List<IncidentSummaryDto>>>
+) : IRequestHandler<ListIncidentsQuery, Result<List<IncidentListDto>>>
 {
-    public async Task<Result<List<IncidentSummaryDto>>> Handle(
+    public async Task<Result<List<IncidentListDto>>> Handle(
       ListIncidentsQuery req,
       CancellationToken ct)
     {
         logger.LogInformation("Listing incidents with filters {@Filters}", req);
 
         var user = http.HttpContext!.User;
-        
         var isAdmin = user.IsInRole(nameof(Role.Admin));
-        
         var isErp = user.IsInRole(nameof(Role.ERP));
-        
-        var query = db.Incidents.AsNoTracking().Where(i => !i.IsDeleted);
+
+        var query = db.Incidents.AsNoTracking();
 
         if (!isAdmin && !isErp)
         {
@@ -36,20 +34,17 @@ public class ListIncidentsQueryHandler(
             query = query.Where(i => i.LoggedById == Guid.Parse(me));
         }
 
-        if (req.SupportStatus.HasValue) query = query.Where(i => i.SupportStatus == req.SupportStatus);
-        if (req.UserStatus.HasValue) query = query.Where(i => i.UserStatus == req.UserStatus);
-        if (req.Module.HasValue) query = query.Where(i => i.Module == req.Module);
-        if (req.Priority.HasValue) query = query.Where(i => i.Priority == req.Priority);
-        if (req.AssignedToId.HasValue) query = query.Where(i => i.AssignedToId == req.AssignedToId);
-        if (req.FromDate.HasValue) query = query.Where(i => i.CreatedDate >= req.FromDate);
-        if (req.ToDate.HasValue) query = query.Where(i => i.CreatedDate <= req.ToDate);
-
-        var list = await query
-          .Select(i => new IncidentSummaryDto(
-            i.Id, i.CallType, i.Module, i.Priority, i.SupportStatus,
-            i.UserStatus, i.Subject, i.CreatedDate, i.LoggedById, i.AssignedToId))
+     
+        var data = await query
+          .OrderByDescending(i => i.CreatedDate)
+          .Select(i => new IncidentListDto(
+              i.Id,
+              i.Subject,
+              i.CallRef
+          ))
           .ToListAsync(ct);
 
-        return Result.Success(list);
+
+        return Result.Success(data);
     }
 }

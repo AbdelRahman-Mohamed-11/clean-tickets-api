@@ -3,6 +3,9 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TicketingSystem.Application.Users.GetCurrentUser;
+using TicketingSystem.Application.Users.GetUserById;
+using TicketingSystem.Application.Users.List;
 using TicketingSystem.Application.Users.Login;
 using TicketingSystem.Application.Users.Register;
 using TicketingSystem.Core.Dtos.Identity;
@@ -92,6 +95,45 @@ namespace TicketingSystem.Api.Controllers
 
             logger.LogInformation("User logged in successfully: {Email}", dto.Email);
             return Ok(result.Value);
+        }
+
+        [Authorize]
+        [HttpGet("users")]
+        [ProducesResponseType(typeof(GetUserDto), StatusCodes.Status200OK)]
+
+        public async Task<IActionResult> GetAllUsers([FromQuery] UserRole user)
+        {
+            logger.LogInformation("Get All users");
+
+            var users = await mediator.Send(new ListUsersQuery());
+
+            logger.LogInformation("Get All users successfully");
+
+            return Ok(users.Value);
+        }
+
+        [Authorize]
+        [HttpGet("users/{Id:guid}")]
+        [ProducesResponseType(typeof(GetUserDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            var query = await mediator.Send(new GetUserByIdQuery(id));
+
+            return query.Status == ResultStatus.NotFound
+                ? NotFound(query.Errors)
+                : Ok(query.Value);
+        }
+
+        [Authorize]
+
+        [HttpGet("get-current-user")]
+        [ProducesResponseType(typeof(GetUserDto), StatusCodes.Status200OK)]
+
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var query = await mediator.Send(new GetCurrentUserQuery());
+
+            return Ok(query.Value);
         }
     }
 }
